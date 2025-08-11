@@ -1,3 +1,4 @@
+//Root Layout : 모든 페이지에 공통적으로 적용되는 레이아웃
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -34,12 +35,12 @@ export default function RootLayout({
       >
         <div className="w-full xl:w-8/10 h-screen mx-auto
                         flex flex-col justify-start items-start">
-          <Nav/>
+          {/* <Nav/> */}
           <main className="w-full flex-grow overflow-y-auto py-10
                            flex flex-col justify-start items-center">
             {children}
           </main>
-          <Footer/>
+          {/* <Footer/> */}
         </div>
       </body>
     </html>

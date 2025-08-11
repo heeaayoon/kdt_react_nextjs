@@ -1,99 +1,130 @@
-import { useRef } from "react"
-import { isLogin } from "../atoms/IsLoginAtom";
-import { useAtom } from "jotai";
-import type { MouseEvent } from "react";
+'use client'
+import { useRef } from 'react'
+import { isLogin } from '@/atoms/isLoginAtom';
+import { useAtom } from 'jotai';
+import type { MouseEvent } from 'react';
+interface accountType {
+  email : string,
+  pwd : number
+}
 
 export default function Login() {
-    const emailRef = useRef<HTMLInputElement>(null); //<input>에 작성되는 값 가져오기
-    const pwRef = useRef<HTMLInputElement>(null); //<input>에 작성되는 값 가져오기
+  const [login,setLogin] = useAtom(isLogin);
 
-    const [ ,setLogin] = useAtom(isLogin); //로그인버튼을 눌렀을 때 사용할 예정 //안쓰는 변수는 지워도 됨(쉼표는 사용하기!)
+  const account : accountType = {email : "www@gmail.com", pwd : 1111};
 
-    const handleLogin = (e:MouseEvent<HTMLButtonElement>) =>{
-        e.preventDefault();
+  const emailRef = useRef<HTMLInputElement>(null);
+  const pwdRef = useRef<HTMLInputElement>(null);
 
-        if(emailRef.current?.value==""){
-            alert("이메일을 입력하세요");
-            emailRef.current.focus();
-            return;
-        }
-        if(pwRef.current?.value==""){
-            alert("비밀번호를 입력하세요");
-            pwRef.current.focus();
-            return;
-        }
 
-        if(emailRef.current?.value!="hee@gmail.com"){
-            alert("이메일을 잘못 입력했습니다."); //백엔드에서 보낸 응답을 이용해서 작성해야할 부분임
-            return;
-        }
+  const handelLogin = (e:MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // ✅ 새로고침 막기
+    const emailin : string | undefined = emailRef.current?.value;
+    const pwd : string | undefined = pwdRef.current?.value;
 
-        if(pwRef.current?.value!="1234"){
-            alert("비밀번호가 일치하지 않습니다."); //백엔드에서 보낸 응답을 이용해서 작성해야할 부분임
-            return;
-        }
-
-        localStorage.setItem("email",emailRef.current.value) //로그인하면 localStorage에 기록(키, value)
-        setLogin(true) //맞는 이메일, 비밀번호를 입력했을 때 login(isLogin을 이름 바꿔서 사용) 전역변수의 상태를 바꿔줌
+    if (emailin == undefined) {
+      alert("이메일을 입력하세요.");
+      emailRef.current?.focus();
     }
+    if (pwd == undefined){
+      alert("비밀번호를 입력하세요.");
+      pwdRef.current?.focus();
+    }
+    // if (email == undefined) {
+    //   return; 
+    // }
 
-    return (
-        <div className="min-h-full w-screen flex justify-center items-center p-4">
-            {/* 그라데이션 테두리 효과를 위한 바깥쪽 div */}
-            {/* 안쪽 div와 바깥쪽 div의 padding 차이로 테두리를 만듭니다. */}
-            <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl p-1">
-                {/* 실제 로그인 폼이 들어가는 흰색 카드 div */}
-                <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 md:p-8">
-                    <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
-                        LOGIN 
-                    </h1>
-                    {/* space-y-6: 자식 요소들 사이에 균일한 수직 간격을 줍니다. */}
-                    <form className="space-y-6">
-                        {/* Email 입력 div */}
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
-                            <input  ref={emailRef}
-                                    id="email"
-                                    type="email"
-                                    className="w-full rounded-lg border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                    placeholder="your@email.com"  required />
-                        </div>
-                        {/* Password 입력 div */}
-                        <div className="flex flex-col space-y-2">
-                            <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
-                            <input  ref={pwRef}
-                                    id="password"
-                                    type="password"
-                                    className="w-full rounded-lg border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                    placeholder="Password"  required />
-                        </div>
-                        {/* 비밀번호 찾기 링크 (오른쪽 정렬) */}
-                        <div className="text-right">
-                            <a href="#" className="text-sm text-blue-500 hover:underline">
-                                Forgot your password?
-                            </a>
-                        </div>
+    if (emailin === account.email) {
+      if (account.email === emailin && String(account.pwd) === pwd) {
+        alert("로그인 성공!");
+        setLogin(true);
+        <div>{emailin}님이 로그인 되었습니다</div>
+      }
+      else {
+        alert("비밀번호가 다릅니다!");
+      }
+    }
+    else {
+      alert("존재하지 않는 이메일입니다!");
+    }
+  } 
 
-                        {/* 로그인 버튼 */}
-                        <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 rounded-lg
-                               hover:from-purple-500 hover:to-blue-500 hover:scale-105 transition-all duration-300 ease-in-out
-                               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                               onClick={handleLogin} >
-                            LOG IN
-                        </button>
-                    </form>
-
-                    {/* 회원가입 링크
-                    <div className="mt-6 text-center text-sm text-gray-600">
-                        <p>
-                            Don't have an account?
-                            <a href="#" className="font-semibold text-blue-500 hover:underline ml-1">
-                                Sign Up
-                            </a>
-                        </p>
-                    </div> */}
-                </div>
-            </div>
+  return (
+      <>
+    <div className="py-12 flex-1 flex-col justify-center px-6 lg:px-8 border-black border-2">
+      {login == false && (
+        <div>
+        <div className="sm:mx-auto sm:w-full sm:max-w-sm "> 
+          <h2 className="mt-20 text-center text-2xl/9 font-bold tracking-tight text-gray-600">
+            로그인 페이지
+          </h2>
         </div>
-    )
+
+        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+          <form className="space-y-6">
+            <div>
+              <label htmlFor="email" className="flex justify-start block text-sm/6 font-medium text-gray-900">
+                이메일 주소
+              </label>
+              <div className="mt-1">
+                <input
+                  // useRef => 입력창에서 읽어옴
+                  ref={emailRef}
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-start">
+                <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
+                  비밀번호
+                </label>
+                <div className="text-sm">
+                </div>
+              </div>
+              <div className="mt-1">
+                <input
+                  // useRef => 입력창에서 읽어옴
+                  ref={pwdRef}
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                />
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                //로그인처리
+                onClick={handelLogin}
+                className="flex w-full justify-center rounded-md bg-blue-500 px-3 py-1.5 text-sm/6 font-semibold
+                           text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2
+                          focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                Sign in
+              </button>
+            </div>
+          </form> 
+        </div>
+        </div>
+        )}
+          {login && (
+            <div className='h-full flex justify-center items-center'>
+              <p>
+              <a href='{emailRef.current.value}'>{emailRef.current?.value}</a> 님이 로그인 되었습니다!
+              </p>
+            </div>
+          )}
+      </div>
+    </>
+  )
 }
