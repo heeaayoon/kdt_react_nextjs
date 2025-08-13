@@ -1,130 +1,114 @@
 'use client'
-import { useRef } from 'react'
-import { isLogin } from '@/atoms/isLoginAtom';
+import { useRef, useState, useEffect } from 'react'
+import { isLogin as isLoginAtom } from '@/atoms/isLoginAtom';
 import { useAtom } from 'jotai';
 import type { MouseEvent } from 'react';
-interface accountType {
-  email : string,
-  pwd : number
-}
 
 export default function Login() {
-  const [login,setLogin] = useAtom(isLogin);
-
-  const account : accountType = {email : "www@gmail.com", pwd : 1111};
-
   const emailRef = useRef<HTMLInputElement>(null);
   const pwdRef = useRef<HTMLInputElement>(null);
 
+  const [isLogin,setIsLogin] = useAtom(isLoginAtom); //전역변수 상태 받아오기
+  const [userEmail, setUserEmail] = useState<string | null>(null); //로그인된 사용자의 이메일 받아오기 위해 설정
+
+  // 컴포넌트가 처음 렌더링될 때 localStorage를 확인해서 로그인 상태를 복원
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("email");
+    if (storedEmail) {
+      setIsLogin(true); // 로컬 스토리지에 정보가 있으면 로그인 상태로 만듦
+      setUserEmail(storedEmail); //이메일도 저장
+    }
+  }, []);
 
   const handelLogin = (e:MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault(); // ✅ 새로고침 막기
-    const emailin : string | undefined = emailRef.current?.value;
-    const pwd : string | undefined = pwdRef.current?.value;
+    e.preventDefault(); // 새로고침 방지
 
-    if (emailin == undefined) {
+    const email = emailRef.current?.value; 
+    const password = pwdRef.current?.value;
+
+    if (!email) { // 이메일이 비어있으면
       alert("이메일을 입력하세요.");
       emailRef.current?.focus();
+      return;
     }
-    if (pwd == undefined){
+    if (!password){  // 비밀번호가 비어있으면
       alert("비밀번호를 입력하세요.");
       pwdRef.current?.focus();
+      return;
     }
-    // if (email == undefined) {
-    //   return; 
-    // }
 
-    if (emailin === account.email) {
-      if (account.email === emailin && String(account.pwd) === pwd) {
-        alert("로그인 성공!");
-        setLogin(true);
-        <div>{emailin}님이 로그인 되었습니다</div>
-      }
-      else {
-        alert("비밀번호가 다릅니다!");
-      }
+    if(email!="hee@gmail.com"){
+        alert("이메일을 잘못 입력했습니다."); //백엔드에서 보낸 응답을 이용해서 작성해야할 부분임
+        return;
     }
-    else {
-      alert("존재하지 않는 이메일입니다!");
+
+    if(password!="1234"){
+        alert("비밀번호가 일치하지 않습니다."); //백엔드에서 보낸 응답을 이용해서 작성해야할 부분임
+        return;
     }
-  } 
 
-  return (
-      <>
-    <div className="py-12 flex-1 flex-col justify-center px-6 lg:px-8 border-black border-2">
-      {login == false && (
-        <div>
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm "> 
-          <h2 className="mt-20 text-center text-2xl/9 font-bold tracking-tight text-gray-600">
-            로그인 페이지
-          </h2>
-        </div>
+    // 로그인이 성공하면
+    localStorage.setItem("email",email);  // 로컬 스토리지에 이메일 저장
+    setIsLogin(true); // 전역 상태를 true로 변경하여 로그인 상태로 설정
+  }
 
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6">
-            <div>
-              <label htmlFor="email" className="flex justify-start block text-sm/6 font-medium text-gray-900">
-                이메일 주소
-              </label>
-              <div className="mt-1">
-                <input
-                  // useRef => 입력창에서 읽어옴
-                  ref={emailRef}
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
+  const handleLogout = () => {
+    setIsLogin(false);
+    localStorage.removeItem("email"); // 로컬 스토리지에서 이메일 제거
+    setUserEmail(null); // 이메일 상태 초기화
+  }
+
+  // Login 상태에 따라 다른 UI를 보여줌 
+    return (
+        <>
+          {isLogin ? (
+              // isLogin이 true일 때 -> 환영메세지와 로그아웃 버튼 
+              <div className="text-center bg-white p-10 rounded-xl shadow-lg">
+                  <h1 className="text-3xl font-bold text-gray-800">환영합니다!</h1>
+                  <p className="mt-4 text-lg text-gray-600">
+                      <span className="font-semibold text-purple-600">{localStorage.getItem("email")}</span> 님, 로그인되었습니다.
+                  </p>
+                  <button onClick={handleLogout}
+                          className="mt-8 w-full bg-red-500 text-white font-bold py-3 rounded-lg
+                                    hover:bg-red-600 transition-all duration-300 ease-in-out
+                                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                      LOG OUT
+                  </button>
               </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-start">
-                <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
-                  비밀번호
-                </label>
-                <div className="text-sm">
-                </div>
+          ) : (
+              // isLogin이 false일 때 -> 로그인폼
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl p-1 shadow-2xl">
+                  <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                      <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
+                          LOGIN
+                      </h1>
+                      <form className="space-y-6">
+                          <div className="flex flex-col space-y-2">
+                              <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
+                              <input ref={emailRef}
+                                  id="email"
+                                  type="email"
+                                  className="w-full rounded-lg border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                  placeholder="your@email.com" required />
+                          </div>
+                          <div className="flex flex-col space-y-2">
+                              <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
+                              <input ref={pwdRef}
+                                  id="password"
+                                  type="password"
+                                  className="w-full rounded-lg border border-gray-300 p-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                  placeholder="Password" required />
+                          </div>
+                          <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 rounded-lg
+                                              hover:from-purple-500 hover:to-blue-500 hover:scale-105 transition-all duration-300 ease-in-out
+                                              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                                  onClick={handelLogin}>
+                              LOG IN
+                          </button>
+                      </form>
+                  </div>
               </div>
-              <div className="mt-1">
-                <input
-                  // useRef => 입력창에서 읽어옴
-                  ref={pwdRef}
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  autoComplete="current-password"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                //로그인처리
-                onClick={handelLogin}
-                className="flex w-full justify-center rounded-md bg-blue-500 px-3 py-1.5 text-sm/6 font-semibold
-                           text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2
-                          focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                Sign in
-              </button>
-            </div>
-          </form> 
-        </div>
-        </div>
-        )}
-          {login && (
-            <div className='h-full flex justify-center items-center'>
-              <p>
-              <a href='{emailRef.current.value}'>{emailRef.current?.value}</a> 님이 로그인 되었습니다!
-              </p>
-            </div>
           )}
-      </div>
-    </>
-  )
+        </>
+    );
 }
